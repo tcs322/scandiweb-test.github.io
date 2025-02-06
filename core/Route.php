@@ -2,13 +2,12 @@
 
 namespace Core;
 
+use stdClass;
+
 class Route
 {
     private $routes;
-    public $found;
-    public $controller;
-    public $action;
-
+    
     public function __construct(array $routes)
     {
         $this->routes = $routes;
@@ -47,12 +46,29 @@ class Route
         return $routesWithControllerAction;
     }
 
+    private function getRequest()
+    {
+        $keyAndValueObjectGetRequest = new stdClass;
+        $keyAndValueObjectPostRequest = new stdClass;
+        $RequestObject = new stdClass;
+        
+        foreach ($_GET as $key => $value) {
+            $keyAndValueObjectGetRequest->$key = $value;
+            $RequestObject->get = $keyAndValueObjectGetRequest;
+        }
+
+        foreach ($_POST as $key => $value) {
+            $keyAndValueObjectPostRequest->$key = $value;
+            $RequestObject->get = $keyAndValueObjectPostRequest;
+        }
+
+        return $RequestObject;
+    }
+
     private function run()
     {
         $parameters = [];
         $urlArray = $this->splitUrl();
-
-        echo $urlArray[1];
 
         foreach ($this->routes as $route) {
             $routeArray = explode('/', $route[0]);
@@ -74,30 +90,32 @@ class Route
             }
         }
 
-        // echo $found;
-        // echo '<br>';
-        // echo $controller;
-        // echo '<br>';
-        // echo $action;
-        // echo '<br>';
-        // echo count($parameters);
-        // echo '<br>';
-        
-
         if ($found) {
             $controller = InitController::newController($controller);
             switch (count($parameters)) {
                 case 1:
-                    $controller->$action($parameters[0]);
+                    $controller->$action(
+                        $parameters[0], 
+                        $this->getRequest()
+                    );
                     break;
                 case 2:
-                    $controller->$action($parameters[0], $parameters[1]);
+                    $controller->$action(
+                        $parameters[0], 
+                        $parameters[1],
+                        $this->getRequest()
+                    );
                     break;
                 case 3:
-                    $controller->$action($parameters[0], $parameters[1], $parameters[2]);
+                    $controller->$action(
+                        $parameters[0], 
+                        $parameters[1], 
+                        $parameters[2],
+                        $this->getRequest()
+                    );
                     break;
                 default:
-                    $controller->$action();
+                    $controller->$action($this->getRequest());
             }
         }
     }
