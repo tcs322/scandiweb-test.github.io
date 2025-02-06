@@ -59,7 +59,7 @@ class Route
 
         foreach ($_POST as $key => $value) {
             $keyAndValueObjectPostRequest->$key = $value;
-            $RequestObject->get = $keyAndValueObjectPostRequest;
+            $RequestObject->post = $keyAndValueObjectPostRequest;
         }
 
         return $RequestObject;
